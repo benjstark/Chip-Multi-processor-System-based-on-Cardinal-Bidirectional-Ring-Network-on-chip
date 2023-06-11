@@ -31,7 +31,7 @@ module rotating_prioritizer
 
 	always @(*)
 	begin
-		if(rq_0_f == 1) 
+		if(rq_0_f == 1) //这里表明：rq_0_f有较高的优先级
 		begin
 			gt_0_f = 1;
 			gt_1_f = 0;
@@ -49,7 +49,7 @@ module rotating_prioritizer
 		if(polarity == 1)
 			if(last_gt_v1 == 1) 
 			begin
-				{rq_0_f, rq_1_f} = {rq_0, rq_1}; // switch
+				{rq_0_f, rq_1_f} = {rq_0, rq_1}; // switch //通过改变赋值给rq_0_f的rq，来实现优先级变换。
 				{gt_0, gt_1} = {gt_0_f, gt_1_f}; // output as it is
 			end
 			else 
@@ -70,6 +70,9 @@ module rotating_prioritizer
 			end	
 	end	
 
+	//以上代码是请求和授权。都是组合逻辑，因此该仲裁器给出仲裁结果不消耗时钟周期。
+	//下面的代码用来记录当前时钟周期的授权情况，以实现在下一个时钟周期优先级改变。
+	
 	// register the current granted request
 	always @(posedge clk)
 	begin
@@ -82,7 +85,7 @@ module rotating_prioritizer
 		begin
 			if(polarity == 1)
 				if((rq_0 == 0) || (rq_1 == 0)) // once no contention happens, we need to reset the priority order
-					last_gt_v1 <= initial_value;
+					last_gt_v1 <= initial_value; //优先级复位表明，这是一个带权重的rr仲裁器
 				else
 				begin
 					// both gt_0 and gt_1 can not be 1 at the same time
